@@ -1,0 +1,118 @@
+# Detection Configuration
+# Identifies objects in scene before segmentation
+
+detection:
+  # Model configuration
+  model:
+    # Options: hybrid (recommended), qwen_direct (faster but less accurate)
+    # hybrid: Qwen 2.5 VL for labels + GroundingDINO for accurate bboxes
+    # qwen_direct: Single model for both (faster but generic labels, merged objects)
+    type: "hybrid"
+    
+    # HuggingFace model ID
+    # Qwen2.5-VL: Qwen/Qwen2.5-VL-3B-Instruct, Qwen/Qwen2.5-VL-7B-Instruct (better grounding)
+    # Qwen2-VL: Qwen/Qwen2-VL-2B-Instruct (2.2GB), Qwen/Qwen2-VL-7B-Instruct (7GB)
+    # Florence: microsoft/Florence-2-base, microsoft/Florence-2-large
+    # DINO: IDEA-Research/grounding-dino-tiny
+    huggingface_model: "Qwen/Qwen2.5-VL-3B-Instruct"
+    
+    device: "cuda"
+  
+  # Processing parameters
+  processing:
+    # Minimum confidence for bounding box detection
+    # 0.35 is a good balance - Qwen 2.5 VL has better grounding
+    box_threshold: 0.35
+    
+    # NMS threshold to remove duplicate detections
+    nms_threshold: 0.5
+    
+    # Maximum image dimension (larger images resized to prevent OOM)
+    max_image_dimension: 1280
+    
+    # Maximum number of detections to return
+    max_detections: 20
+  
+  # LLM-based size estimation
+  # Uses Qwen to estimate real-world object sizes with scene context
+  estimate_sizes: true
+  
+  # Prompt configuration
+  prompts:
+    # For grounding_dino standalone mode
+    mode: "auto"
+    auto_prompt: "cup. mug. plate. stool. table. chair. bottle. bowl."
+    
+    # For hybrid mode: Qwen2-VL label extraction prompt
+    # Keep it simple - the model should detect all objects naturally
+    qwen_prompt: |
+      List all objects visible in this image.
+      Return a comma-separated list of object names with colors/materials.
+      Objects:
+    
+    # Size estimation prompt (used when estimate_sizes: true)
+    # {objects} will be replaced with detected labels
+    # {surface_context} will be replaced with surface/object relationships
+    size_prompt: |
+      For each object, estimate its TYPICAL real-world size (largest dimension in METERS).
+      Be precise - use exact measurements for common objects:
+      
+      Reference sizes:
+      - Toy wooden blocks: 0.04-0.05m (4-5cm)
+      - Crayons: 0.08-0.10m (8-10cm)  
+      - Coffee mug/cup: 0.08-0.10m (8-10cm height)
+      - Saucer: 0.12-0.15m (12-15cm diameter)
+      - Phone: 0.14-0.16m (14-16cm)
+      - Small rocks/pebbles: 0.03-0.05m (3-5cm)
+      - Baby socks: 0.08-0.12m (8-12cm)
+      - Drumsticks/craft sticks: 0.15-0.20m (15-20cm)
+      - Cookie cutter: 0.06-0.08m (6-8cm)
+      - Laptop: 0.30-0.40m (30-40cm)
+      - Stool: 0.35-0.45m (35-45cm height)
+      - Small table: 0.60-0.80m (60-80cm)
+      
+      Objects detected: {objects}
+      {surface_context}
+      
+      Return ONLY in this format (one per line):
+      object_name: size_in_meters
+      
+      Sizes:
+  
+  # Filtering
+  filtering:
+    # Minimum detection area (pixels^2)
+    min_area: 500
+    
+    # Maximum detection area ratio (relative to image)
+    max_area_ratio: 0.9
+    
+    # Labels to exclude
+    exclude_labels:
+      - "background"
+      - "floor"
+      - "wall"
+      - "ceiling"
+  
+  # Output
+  output:
+    # Save detection visualization
+    save_visualization: true
+    
+    # Format for bounding boxes: "xyxy" or "xywh"
+    bbox_format: "xyxy"
+
+# Integration with segmentation
+integration:
+  # Pass detections to SAM as prompts
+  pass_to_segmentation: true
+  
+  # Use bounding boxes as SAM box prompts
+  use_bbox_prompts: true
+  
+  # Use detection labels as text prompts (for SAM 3)
+  use_text_prompts: true
+  
+  # Minimum confidence to pass to segmentation
+  min_confidence_for_segmentation: 0.35
+

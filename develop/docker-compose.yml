@@ -1,0 +1,78 @@
+services:
+  mars:
+    build:
+      context: ..
+      dockerfile: develop/Dockerfile
+      args:
+        # Pass HF token as build arg for downloading models during build
+        - HF_TOKEN=${HF_TOKEN:-}
+        - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+        - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    container_name: mars-container
+    hostname: mars-host
+    network_mode: host
+    stdin_open: true
+    tty: true
+    env_file:
+      - ../.env
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.docker.xauth
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - MUJOCO_GL=egl
+      # Prefect configuration (ephemeral mode by default - no server needed)
+      # Set PREFECT_API_URL=http://127.0.0.1:4200/api to use Prefect server
+      - PREFECT_API_URL=${PREFECT_API_URL:-}
+      - PREFECT_HOME=${PREFECT_HOME:-/workspace/data/prefect}
+      - PREFECT_LOGGING_LEVEL=${PREFECT_LOGGING_LEVEL:-ERROR}
+      - PREFECT_LOGGING_INTERNAL_LEVEL=${PREFECT_LOGGING_INTERNAL_LEVEL:-ERROR}
+      - PREFECT_LOCAL_STORAGE_PATH=/workspace/data/prefect/storage
+      - PREFECT_SEND_ANONYMOUS_USAGE_STATS=false
+      # Disable events to avoid "stopped service" errors
+      - PREFECT_EVENTS_ENABLED=false
+      - PREFECT_CLIENT_ENABLE_EVENTS=false
+      - PREFECT_RESULTS_PERSIST_BY_DEFAULT=false
+      # HuggingFace model cache - use host-mounted models directory
+      - HF_HOME=/workspace/models/huggingface
+      - TRANSFORMERS_CACHE=/workspace/models/transformers
+      - HUGGINGFACE_HUB_CACHE=/workspace/models/hub
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - PYTHONPATH=/workspace:${PYTHONPATH}
+    volumes:
+      # X11 for GUI support
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/tmp/.docker.xauth:ro
+      # Mount MARS source code for development
+      - ../src:/workspace/src:rw
+      # Persistent data volumes - mount to host for easy access and to avoid bloating container
+      - ../data:/workspace/data:rw
+      - ../models:/workspace/models:rw
+      - ../logs:/workspace/logs:rw
+      # Optional: Mount config directory if you have one
+      - ../config:/workspace/config:ro
+      # Mount tests directory for test images
+      - ../tests:/workspace/tests:ro
+      # Mount visualizations directory (accessible from host)
+      - ../visualizations:/workspace/visualizations:rw
+      # Mount checkpoints directory (host-persistent, survives rebuilds)
+      - ../checkpoints:/workspace/checkpoints:rw
+      # Mount .env file for environment variables
+      - ../.env:/workspace/.env:ro
+    devices:
+      - /dev/dri:/dev/dri
+    runtime: nvidia
+    command: /bin/bash
+    restart: unless-stopped
+    shm_size: '8gb'
+
+# Note: Using host-mounted directories instead of Docker volumes
+# This prevents container bloat and makes data easily accessible on host
+# volumes:
+#   mars_data:  # Replaced with ../data host mount
+#   mars_models:  # Replaced with ../models host mount
+#   mars_logs:  # Replaced with ../logs host mount
+

@@ -1,0 +1,82 @@
+physics:
+  default_material: "plastic"
+  
+  # Real-world scale factors for mass calculation
+  # SAM 3D meshes are normalized - use these to get realistic masses
+  # Formula: mass = mesh_volume * scale_factor * material_density
+  category_scale:
+    cup: 0.005         # Cup ~300g ceramic
+    mug: 0.005
+    saucer: 0.002      # Saucer ~150g ceramic  
+    plate: 0.003
+    bowl: 0.006
+    glass: 0.003
+    stool: 0.2         # Stool 3-8kg wood
+    chair: 0.3
+    table: 0.5
+    desk: 0.6
+    bottle: 0.003
+    can: 0.002
+    box: 0.02
+    default: 0.01
+  
+  materials:
+    plastic:
+      density: 1000.0  # kg/m3
+      friction: 0.5
+      restitution: 0.4 # bounciness
+    wood:
+      density: 700.0
+      friction: 0.6
+      restitution: 0.3
+    metal:
+      density: 7800.0
+      friction: 0.4
+      restitution: 0.2
+    ceramic:
+      density: 2500.0
+      friction: 0.7
+      restitution: 0.1
+    foam:
+      density: 50.0
+      friction: 0.9
+      restitution: 0.1
+
+  # Mapping categories (from Stage 2) to likely materials
+  category_map:
+    # Containers
+    bottle: "plastic"
+    can: "metal"
+    box: "wood"  # or cardboard
+    cup: "ceramic"
+    mug: "ceramic"
+    glass: "ceramic"
+    bowl: "ceramic"
+    plate: "ceramic"
+    saucer: "ceramic"
+    
+    # Furniture
+    table: "wood"
+    stool: "wood"
+    chair: "wood"
+    shelf: "metal"
+    desk: "wood"
+    
+    # Food (simplified)
+    apple: "plastic"
+    orange: "plastic"
+    banana: "plastic"
+    
+    # Default categories
+    wooden: "wood"
+    wood: "wood"
+    ceramic: "ceramic"
+    metal: "metal"
+    plastic: "plastic"
+    unknown: "plastic"
+
+  randomization:
+    mass_scale: 0.1 # +/- 10%
+    friction_scale: 0.1
+    restitution_scale: 0.1
+

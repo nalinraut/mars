@@ -1,0 +1,20 @@
+ingestion:
+  supported_formats:
+    - .jpg
+    - .jpeg
+    - .png
+  resolution:
+    min_width: 512
+    min_height: 512
+    max_width: 4096
+    max_height: 4096
+  staging_dir: "data/staging"
+  thumbnails:
+    enabled: true
+    size: [256, 256]
+    format: "JPEG"
+  deduplication:
+    enabled: true
+    hash_algorithm: "phash"
+    index_db_url: "sqlite:///scene_index.db"
+

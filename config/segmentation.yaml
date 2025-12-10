@@ -1,0 +1,216 @@
+segmentation:
+  model:
+    # Use SAM 3 - Meta's latest model with text prompt support!
+    # https://huggingface.co/facebook/sam3
+    type: "sam3"  # SAM 3 with Promptable Concept Segmentation (PCS)
+    huggingface_model: "facebook/sam3"
+    device: "cuda"  # Use GPU if available, auto-fallback to CPU
+  
+  # SAM 3 confidence threshold - lower = more instances detected
+  # Default 0.5 often returns only 1 mask per prompt
+  # 0.35 captures most objects while avoiding too many duplicates
+  confidence_threshold: 0.35
+
+  processing:
+    # Filtering thresholds for mask quality
+    pred_iou_thresh: 0.35  # Minimum predicted IoU score (lowered to catch socks/cookie cutter)
+    stability_score_thresh: 0.92  # Minimum stability score
+    min_mask_region_area: 1000  # Minimum pixels for a mask
+    max_area_ratio: 0.50  # Maximum area ratio - only filter truly huge masks (>50% of image)
+
+  deduplication:
+    # Remove duplicate masks using two methods:
+    # 1. IoU: If two masks overlap significantly, keep the higher-confidence one
+    # 2. Containment: If mask A is inside mask B, remove the smaller one
+    enabled: true  # Highly recommended to keep enabled
+    iou_threshold: 0.7  # If IoU > 70%, masks are likely duplicates
+    containment_threshold: 0.8  # If 80%+ of mask A is inside mask B, remove smaller
+
+  instance_splitting:
+    # Split masks with disconnected regions into separate instances
+    # E.g., if one mask covers 2 separate blocks, split into 2 masks
+    enabled: true
+    min_component_area: 500  # Minimum pixels for a component
+    min_component_ratio: 0.1  # Min ratio of component to total mask area
+
+  merging:
+    # Mask merging configuration
+    # SAM 3 generates complete objects with text prompts, so merging is often unnecessary
+    enabled: false  # Set to true to merge spatially close masks
+    iou_threshold: 0.05  # IoU threshold for considering masks as related
+    distance_threshold: 200  # Max distance (pixels) between centroids to merge
+    keep_top_n: 8  # Keep only top N largest objects after merging (0 = keep all)
+
+  prompts:
+    # Text prompts for SAM 3 (natural language object descriptions)
+    # These are used when detection is disabled
+    text_prompts:
+      - "wooden stool"
+      - "coffee cup"
+      - "white saucer"
+
+  # Label mapping: Florence-2 detection labels → SAM 3 prompts
+  # Many detection labels can map to the same SAM 3 prompt
+  # Use null to skip (liquids, background, etc.)
+  label_mapping:
+    # ─────────────────────────────────────────────────────────
+    # SEATING (all map to appropriate seating type)
+    # ─────────────────────────────────────────────────────────
+    stool: "stool"
+    wooden stool: "wooden stool"
+    bar stool: "bar stool"
+    chair: "chair"
+    wooden chair: "wooden chair"
+    office chair: "office chair"
+    armchair: "armchair"
+    sofa: "sofa"
+    couch: "sofa"
+    bench: "bench"
+    seat: "chair"
+    
+    # ─────────────────────────────────────────────────────────
+    # TABLES & SURFACES
+    # ─────────────────────────────────────────────────────────
+    table: "table"
+    table desk: "table"
+    desk: "desk"
+    dining table: "dining table"
+    coffee table: "coffee table"
+    counter: "counter"
+    countertop: "counter"
+    shelf: "shelf"
+    
+    # ─────────────────────────────────────────────────────────
+    # CUPS & MUGS (all map to cup/mug variants)
+    # ─────────────────────────────────────────────────────────
+    cup: "cup"
+    mug: "mug"
+    cup mug: "cup"
+    coffee cup: "coffee cup"
+    tea cup: "tea cup"
+    teacup: "tea cup"
+    glass: "glass"
+    wine glass: "wine glass"
+    tumbler: "glass"
+    
+    # ─────────────────────────────────────────────────────────
+    # PLATES & DISHES
+    # ─────────────────────────────────────────────────────────
+    plate: "plate"
+    dish: "plate"
+    saucer: "saucer"
+    bowl: "bowl"
+    soup bowl: "bowl"
+    tray: "tray"
+    platter: "plate"
+    
+    # ─────────────────────────────────────────────────────────
+    # BOTTLES & CONTAINERS
+    # ─────────────────────────────────────────────────────────
+    bottle: "bottle"
+    water bottle: "bottle"
+    wine bottle: "bottle"
+    jar: "jar"
+    can: "can"
+    container: "container"
+    box: "box"
+    carton: "box"
+    basket: "basket"
+    bucket: "bucket"
+    vase: "vase"
+    pot: "pot"
+    pitcher: "pitcher"
+    jug: "pitcher"
+    
+    # ─────────────────────────────────────────────────────────
+    # FOOD (keep as-is, they're graspable)
+    # ─────────────────────────────────────────────────────────
+    apple: "apple"
+    orange: "orange"
+    banana: "banana"
+    fruit: "fruit"
+    bread: "bread"
+    sandwich: "sandwich"
+    pizza: "pizza"
+    cake: "cake"
+    
+    # ─────────────────────────────────────────────────────────
+    # ELECTRONICS
+    # ─────────────────────────────────────────────────────────
+    phone: "phone"
+    cell phone: "phone"
+    mobile phone: "phone"
+    laptop: "laptop"
+    computer: "laptop"
+    keyboard: "keyboard"
+    mouse: "mouse"
+    remote: "remote"
+    remote control: "remote"
+    tablet: "tablet"
+    monitor: "monitor"
+    tv: "monitor"
+    television: "monitor"
+    
+    # ─────────────────────────────────────────────────────────
+    # UTENSILS & TOOLS
+    # ─────────────────────────────────────────────────────────
+    fork: "fork"
+    knife: "knife"
+    spoon: "spoon"
+    chopsticks: "chopsticks"
+    spatula: "spatula"
+    scissors: "scissors"
+    pen: "pen"
+    pencil: "pencil"
+    
+    # ─────────────────────────────────────────────────────────
+    # HOUSEHOLD ITEMS
+    # ─────────────────────────────────────────────────────────
+    lamp: "lamp"
+    light: "lamp"
+    clock: "clock"
+    book: "book"
+    magazine: "book"
+    newspaper: "newspaper"
+    pillow: "pillow"
+    cushion: "pillow"
+    blanket: "blanket"
+    towel: "towel"
+    plant: "plant"
+    flower: "flower"
+    
+    # ─────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────
+    # SAM 3 PROMPT FIXES (terms SAM 3 doesn't understand well)
+    # ─────────────────────────────────────────────────────────
+    wooden sticks: "sticks"
+    wooden stick: "stick"
+    # Note: "plastic cookie cutter" works fine with lower confidence threshold
+    
+    # ─────────────────────────────────────────────────────────
+    # SKIP: Liquids, backgrounds, abstract concepts
+    # ─────────────────────────────────────────────────────────
+    tea: null
+    coffee: null
+    water: null
+    juice: null
+    milk: null
+    soup: null
+    liquid: null
+    background: null
+    floor: null
+    wall: null
+    ceiling: null
+    sky: null
+    shadow: null
+    reflection: null
+    
+  classification:
+    interactive_categories: ["bottle", "can", "box", "cup", "apple", "orange"]
+    static_categories: ["table", "shelf", "floor", "wall"]
+    min_area_ratio: 0.001  # Ignore very small objects
+    
+  retry:
+    max_retries: 3
+    backoff_seconds: 2
+

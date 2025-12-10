@@ -1,0 +1,61 @@
+reconstruction:
+  # Active reconstruction model
+  active_model: "sam3d"  # Options: sam3d, cosmos, triposr
+  
+  models:
+    sam3d:
+      checkpoint_tag: "sam3d"           # Directory under /workspace/checkpoints/
+      sam3d_path: "/opt/sam-3d-objects" # SAM 3D Objects code location
+      device: "cuda"
+      resolution: 256                   # Internal processing resolution
+      seed: 42                          # Random seed for reproducibility
+    
+    cosmos:
+      api_key: ""       # Set via COSMOS_API_KEY env var
+      mode: "mesh_gen"
+  
+  # MoGe monocular depth estimation
+  moge:
+    model_id: "Ruicheng/moge-vitl"
+    checkpoint_path: "/workspace/checkpoints/moge"
+    device: "cuda"
+  
+  # Mesh post-processing
+  mesh_repair:
+    enabled: true
+    remove_degenerate_faces: true
+    merge_vertices: true
+    fix_normals: true
+    fill_holes: true              # Required for watertight physics meshes
+  
+  # Collision mesh generation
+  collision:
+    method: "vhacd"               # Options: vhacd, convex_hull, simplified
+    fallback: "convex_hull"       # Fallback if primary method fails
+    
+    # V-HACD (Volumetric Hierarchical Approximate Convex Decomposition)
+    # Decomposes concave meshes into multiple convex hulls
+    vhacd:
+      resolution: 100000          # Voxel resolution (10K=fast, 100K=balanced, 1M=precise)
+      depth: 20                   # Max recursion depth
+      concavity: 0.0025           # Max concavity threshold (lower = more hulls)
+      plane_downsampling: 4       # Plane downsampling factor
+      hull_downsampling: 4        # Convex hull downsampling factor
+      alpha: 0.05                 # Symmetry weight
+      beta: 0.05                  # Revolution axes weight  
+      gamma: 0.00125              # Max concavity during merge
+      max_vertices_per_hull: 64   # Max vertices per convex hull
+      min_volume_per_hull: 0.0001 # Min volume to keep a hull
+      mode: 0                     # 0=voxel, 1=tetrahedron
+    
+    # Simplified mesh (alternative to V-HACD)
+    simplified:
+      target_faces: 1000          # Target face count after decimation
+      ensure_watertight: true     # Fall back to convex hull if not watertight
+  
+  # Output formats
+  output:
+    visual_format: "obj"          # Visual mesh format
+    collision_format: "obj"       # Collision mesh format
+    export_usdc: true             # Export USDC for Isaac Sim
+    preserve_vertex_colors: true  # Keep vertex colors in exports

@@ -1,0 +1,328 @@
+composition:
+  # Camera Estimation defaults if not inferred
+  camera:
+    fov: 60.0
+    position: [0.0, -1.5, 1.2] # Usually slightly above/back looking down
+    look_at: [0.0, 0.0, 0.0]
+    
+  # Default Workspace Zones
+  zones:
+    pick:
+      center: [0.0, 0.0, 0.0]
+      size: [0.5, 0.5, 0.5] # w, l, h
+    place:
+      center: [0.6, 0.0, 0.0]
+      size: [0.3, 0.3, 0.0] # Flat target area
+
+  # Layout Strategy
+  layout:
+    ground_plane_height: 0.0
+    object_separation: 0.02 # Minimum distance between objects (meters)
+    scene_width: 1.0        # Total scene width (meters) - full table width
+    scene_depth: 0.8        # Total scene depth (meters) - full table depth  
+    grid_fallback: true     # Use grid if perception projection fails
+  
+  # Depth estimation for Z positioning
+  depth:
+    enabled: true
+    model: "depth_anything_v2"  # Options: "depth_anything_v2", "moge"
+    model_size: "large"         # Options: "small", "base", "large"
+    metric: false               # Use metric depth (meters) or relative
+    scene_type: "indoor"        # For metric mode: "indoor" or "outdoor"
+    
+  # Real-world scaling
+  # SAM 3D Objects outputs meshes normalized to ~1m. We scale to real dimensions.
+  # Scale = target_size / 1.0 (since SAM3D outputs ~1m meshes)
+  scaling:
+    enabled: true
+    default_scale: 0.1  # Default: 10cm if category unknown
+    
+    # Category-based scales (target real-world size in meters)
+    # Organized by object type for easier maintenance
+    categories:
+      # === FURNITURE (0.4m - 1.5m) ===
+      table: 0.8
+      wooden table: 0.8
+      coffee table: 0.5
+      dining table: 1.2
+      desk: 0.8
+      office desk: 1.2
+      chair: 0.5
+      office chair: 0.6
+      armchair: 0.7
+      stool: 0.4
+      wooden stool: 0.4
+      bar stool: 0.7
+      bench: 0.5
+      shelf: 0.8
+      bookshelf: 1.5
+      cabinet: 0.8
+      drawer: 0.4
+      couch: 0.9
+      sofa: 0.9
+      bed: 2.0
+      nightstand: 0.5
+      
+      # === ELECTRONICS (0.05m - 0.5m) ===
+      laptop: 0.35
+      computer: 0.4
+      monitor: 0.5
+      keyboard: 0.4
+      mouse: 0.08
+      phone: 0.15
+      smartphone: 0.15
+      cellphone: 0.15
+      mobile phone: 0.15
+      tablet: 0.25
+      ipad: 0.25
+      remote: 0.15
+      remote control: 0.18
+      tv remote: 0.18
+      charger: 0.08
+      headphones: 0.18
+      earbuds: 0.05
+      speaker: 0.15
+      camera: 0.12
+      watch: 0.04
+      smartwatch: 0.04
+      
+      # === KITCHEN/DINING (0.05m - 0.3m) ===
+      cup: 0.1
+      mug: 0.1
+      coffee cup: 0.1
+      teacup: 0.08
+      glass: 0.12
+      wine glass: 0.2
+      saucer: 0.15
+      white saucer: 0.15
+      plate: 0.25
+      dinner plate: 0.28
+      bowl: 0.15
+      bottle: 0.25
+      water bottle: 0.25
+      wine bottle: 0.3
+      jar: 0.15
+      can: 0.12
+      pitcher: 0.25
+      kettle: 0.2
+      teapot: 0.18
+      pot: 0.25
+      pan: 0.3
+      spoon: 0.15
+      fork: 0.18
+      knife: 0.2
+      chopsticks: 0.22
+      napkin: 0.15
+      coaster: 0.1
+      
+      # === OFFICE/STATIONERY (0.05m - 0.3m) ===
+      book: 0.25
+      notebook: 0.2
+      notepad: 0.15
+      journal: 0.2
+      magazine: 0.28
+      folder: 0.3
+      binder: 0.28
+      paper: 0.28
+      document: 0.28
+      envelope: 0.22
+      pen: 0.14
+      pencil: 0.18
+      marker: 0.14
+      highlighter: 0.13
+      eraser: 0.05
+      ruler: 0.3
+      scissors: 0.18
+      stapler: 0.12
+      tape: 0.08
+      tape dispenser: 0.12
+      paperclip: 0.03
+      clip: 0.03
+      binder clip: 0.04
+      sticky notes: 0.08
+      post-it: 0.08
+      calculator: 0.15
+      
+      # === PERSONAL ITEMS (0.03m - 0.3m) ===
+      wallet: 0.12
+      purse: 0.25
+      bag: 0.35
+      backpack: 0.45
+      handbag: 0.3
+      keys: 0.06
+      key: 0.05
+      keychain: 0.08
+      sunglasses: 0.14
+      eyeglasses: 0.14
+      glasses: 0.14
+      hat: 0.25
+      cap: 0.2
+      umbrella: 0.3
+      ring: 0.02
+      bracelet: 0.06
+      necklace: 0.4
+      earring: 0.02
+      
+      # === TOYS/GAMES (0.03m - 0.3m) ===
+      blocks: 0.05
+      block: 0.05
+      wooden blocks: 0.05
+      blue wooden blocks: 0.05
+      white wooden blocks: 0.05
+      blue blocks: 0.05
+      white blocks: 0.05
+      white block: 0.05
+      blue block: 0.05
+      toy: 0.15
+      ball: 0.1
+      tennis ball: 0.07
+      baseball: 0.07
+      basketball: 0.24
+      soccer ball: 0.22
+      dice: 0.02
+      cards: 0.09
+      playing cards: 0.09
+      puzzle: 0.25
+      lego: 0.03
+      figurine: 0.1
+      action figure: 0.15
+      doll: 0.3
+      stuffed animal: 0.25
+      teddy bear: 0.3
+      
+      # === CRAFT/ART SUPPLIES (0.03m - 0.2m) ===
+      crayons: 0.09
+      crayon: 0.09
+      colored pencil: 0.17
+      paintbrush: 0.2
+      paint: 0.08
+      glue: 0.1
+      glue stick: 0.1
+      string: 0.15
+      cord: 0.15
+      yarn: 0.1
+      thread: 0.05
+      needle: 0.04
+      button: 0.02
+      bead: 0.01
+      ribbon: 0.3
+      wooden sticks: 0.18
+      sticks: 0.18
+      craft stick: 0.15
+      popsicle stick: 0.11
+      cookie cutter: 0.08
+      plastic cookie cutter: 0.08
+      
+      # === HOUSEHOLD (0.05m - 0.4m) ===
+      vase: 0.25
+      flower vase: 0.25
+      plant: 0.3
+      potted plant: 0.3
+      flower pot: 0.2
+      candle: 0.15
+      lamp: 0.4
+      table lamp: 0.4
+      clock: 0.2
+      alarm clock: 0.1
+      frame: 0.25
+      picture frame: 0.25
+      photo frame: 0.2
+      mirror: 0.3
+      tissue box: 0.12
+      tissues: 0.12
+      box: 0.2
+      container: 0.15
+      basket: 0.25
+      tray: 0.3
+      
+      # === FOOD (0.03m - 0.2m) ===
+      apple: 0.08
+      orange: 0.08
+      banana: 0.18
+      fruit: 0.1
+      sandwich: 0.12
+      bread: 0.2
+      cookie: 0.08
+      cake: 0.25
+      donut: 0.1
+      pizza: 0.3
+      egg: 0.05
+      cheese: 0.1
+      
+      # === CLOTHING/FABRIC (0.1m - 0.5m) ===
+      socks: 0.12
+      sock: 0.12
+      shoe: 0.28
+      shoes: 0.28
+      sneaker: 0.28
+      boot: 0.35
+      slipper: 0.25
+      shirt: 0.6
+      t-shirt: 0.6
+      pants: 0.9
+      jacket: 0.7
+      coat: 0.8
+      scarf: 0.15
+      glove: 0.2
+      gloves: 0.2
+      towel: 0.6
+      cloth: 0.3
+      
+      # === NATURE/OUTDOOR (0.02m - 0.3m) ===
+      rocks: 0.04
+      rock: 0.04
+      stone: 0.05
+      pebble: 0.02
+      leaf: 0.08
+      leaves: 0.1
+      flower: 0.1
+      branch: 0.3
+      stick: 0.2
+      shell: 0.05
+      seashell: 0.06
+      pinecone: 0.08
+      feather: 0.15
+      
+      # === TOOLS (0.1m - 0.4m) ===
+      hammer: 0.3
+      screwdriver: 0.2
+      wrench: 0.2
+      pliers: 0.18
+      drill: 0.25
+      saw: 0.4
+      measuring tape: 0.08
+      level: 0.3
+      flashlight: 0.15
+      
+    # Fallback patterns (substring matching)
+    patterns:
+      - pattern: "block"
+        scale: 0.05
+      - pattern: "crayon"
+        scale: 0.08
+      - pattern: "stick"
+        scale: 0.15
+      - pattern: "rock"
+        scale: 0.04
+      - pattern: "phone"
+        scale: 0.15
+      - pattern: "cup"
+        scale: 0.1
+      - pattern: "bottle"
+        scale: 0.25
+      - pattern: "book"
+        scale: 0.25
+      - pattern: "pen"
+        scale: 0.14
+      - pattern: "ball"
+        scale: 0.1
+      - pattern: "toy"
+        scale: 0.15
+    
+  # Lighting defaults
+  lighting:
+    ambient: 0.4
+    directional:
+      - direction: [1.0, -1.0, -1.0]
+        intensity: 0.8
+

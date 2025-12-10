@@ -1,0 +1,60 @@
+# Prefect Configuration
+# Configure Prefect server and logging behavior
+
+prefect:
+  # Server configuration
+  server:
+    # Run local server by default
+    enabled: true
+    host: "127.0.0.1"
+    port: 4200
+    # API URL (set automatically when server is running)
+    api_url: "http://127.0.0.1:4200/api"
+    
+  # Logging configuration
+  logging:
+    # Log level: DEBUG, INFO, WARNING, ERROR
+    level: "INFO"
+    # Format for log messages
+    format: "[%(asctime)s] %(levelname)s - %(name)s - %(message)s"
+    # Log to console
+    console: true
+    # Log file path (relative to workspace)
+    file: "logs/prefect.log"
+    # Disable Prefect's internal logging noise
+    suppress_internal: true
+    
+  # Flow run settings
+  flows:
+    # Retry failed tasks
+    retries: 1
+    retry_delay_seconds: 5
+    # Task concurrency (for parallel execution)
+    task_runner: "sequential"  # or "concurrent" for parallel
+    # Timeout for individual tasks (seconds)
+    task_timeout: 600  # 10 minutes
+    
+  # Result persistence
+  results:
+    # Persist flow results locally
+    persist: true
+    # Results directory
+    directory: "data/prefect/results"
+    
+  # Disable telemetry
+  telemetry:
+    enabled: false
+
+# Environment variables to set
+# These are exported before running Prefect
+environment:
+  PREFECT_API_URL: "http://127.0.0.1:4200/api"
+  PREFECT_HOME: "/workspace/data/prefect"
+  PREFECT_LOGGING_LEVEL: "INFO"
+  # Disable noisy internal logging
+  PREFECT_LOGGING_INTERNAL_LEVEL: "WARNING"
+  # Disable cloud features (we're running locally)
+  PREFECT_CLOUD_API_URL: ""
+  # Disable event persistence to avoid "stopped service" errors
+  PREFECT_LOCAL_STORAGE_PATH: "/workspace/data/prefect/storage"
+

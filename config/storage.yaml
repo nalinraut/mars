@@ -1,0 +1,20 @@
+storage:
+  root_dir: "data/final"  # Local final storage
+  archive_format: "zip"   # or "tar.gz"
+  
+  # Remote storage (optional)
+  s3:
+    enabled: false
+    bucket: "mars-assets"
+    region: "us-east-1"
+    prefix: "v1/"
+
+  # Indexing
+  index:
+    db_url: "sqlite:///scene_index.db"
+    
+  # Artifacts
+  artifacts:
+    generate_thumbnail: true
+    generate_preview_render: false # requires blender/renderer
+

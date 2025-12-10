@@ -1,0 +1,52 @@
+# Docker build context exclusions
+# Prevents large files from being sent to Docker daemon
+
+# Checkpoints - 14GB+ of model weights
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+*.bin
+
+# Git
+.git/
+.gitmodules
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test outputs
+*.log
+*.tmp
+
+# Documentation (keep these small, but not needed in container)
+*.md
+!requirements.txt
+
+# Visualizations output
+visualizations/
+
+# Data volumes (mounted at runtime)
+data/
+

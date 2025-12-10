@@ -1,0 +1,30 @@
+validation:
+  simulation:
+    engine: "pybullet"
+    gravity: [0, -9.81, 0]  # Y-up coordinate system
+    settle_time: 2.0  # seconds to run sim (increased for complex meshes)
+    time_step: 0.004  # 240Hz
+    use_collision_mesh: true  # Use simplified collision mesh if available
+    
+  thresholds:
+    # Max distance an object can move before considered unstable
+    # Increased to 0.15m to account for settling of complex meshes
+    max_displacement_m: 0.15
+    # Max rotation (radians)
+    max_rotation_rad: 0.5
+    # Max interpenetration depth
+    max_overlap_m: 0.01
+    # Stability pass threshold (percentage of stable objects)
+    min_stability_percent: 66.0  # At least 2/3 objects must be stable
+    
+  completeness:
+    min_objects: 1
+    max_objects: 20
+    required_zones: ["pick", "place"]
+    
+  # Support relationship validation
+  support_constraints:
+    enabled: true
+    # Objects marked as supported should not fall through their support surface
+    max_support_violation_m: 0.05
+
